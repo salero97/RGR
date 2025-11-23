@@ -1,0 +1,2 @@
+#!/bin/bash
+cd "/home/salero/RGR/rgr_vigenere_great_bigram" && ./bin/EDR
