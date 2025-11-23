@@ -6,11 +6,13 @@
 #include <map>
 #include <cstdint>
 
+using namespace std;
+
 class GreatCipher {
 private:
-    std::map<uint16_t, std::vector<uint8_t>> encryptionTable;
-    std::map<uint8_t, std::vector<uint16_t>> decryptionTable;
-    std::vector<uint16_t> homophoneSequence;
+    map<uint16_t, vector<uint8_t>> encryptionTable;
+    map<uint8_t, vector<uint16_t>> decryptionTable;
+    vector<uint16_t> homophoneSequence;
     uint32_t keySeed;
     
     void createTables();
@@ -18,16 +20,16 @@ private:
     
 public:
     GreatCipher(uint32_t seed);
-    GreatCipher(const std::string& key);
+    GreatCipher(const string& key);
     
-    std::vector<uint8_t> encrypt(const std::vector<uint8_t>& data);
-    std::vector<uint8_t> decrypt(const std::vector<uint8_t>& data);
+    vector<uint8_t> encrypt(const vector<uint8_t>& data);
+    vector<uint8_t> decrypt(const vector<uint8_t>& data);
     
-    std::string encryptText(const std::string& text);
-    std::string decryptText(const std::string& text);
+    string encryptText(const string& text);
+    string decryptText(const string& text);
     
-    static std::vector<uint8_t> processBytes(const std::vector<uint8_t>& data, const std::string& key, bool encrypt);
-    static std::string processText(const std::string& text, const std::string& key, bool encrypt);
+    static vector<uint8_t> processBytes(const vector<uint8_t>& data, const string& key, bool encrypt);
+    static string processText(const string& text, const string& key, bool encrypt);
 };
 
 #endif

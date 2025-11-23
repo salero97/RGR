@@ -5,14 +5,16 @@
 #include <string>
 #include "utils.h"
 
-inline void validateKey(const std::string& key) {
+using namespace std;
+
+inline void validateKey(const string& key) {
     if (key.empty()) {
-        throw std::invalid_argument("Ключ не может быть пустым");
+        throw invalid_argument("Ключ не может быть пустым");
     }
 }
 
-std::vector<unsigned char> vigenereEncrypt(const std::vector<unsigned char>& data, const std::string& key);
-std::vector<unsigned char> vigenereDecrypt(const std::vector<unsigned char>& data, const std::string& key);
-std::string generateVigenereKey(int length);
+vector<unsigned char> vigenereEncrypt(const vector<unsigned char>& data, const string& key);
+vector<unsigned char> vigenereDecrypt(const vector<unsigned char>& data, const string& key);
+string generateVigenereKey(int length);
 
 #endif

@@ -7,34 +7,36 @@
 #include <utility>
 #include <cstdint>
 
+using namespace std;
+
 class BigramCipher {
 private:
-    std::vector<std::vector<int>> matrix;
-    std::map<int, std::pair<int, int>> positions;
-    std::string key;
+    vector<vector<int>> matrix;
+    map<int, pair<int, int>> positions;
+    string key;
     
     void createMatrix();
     void permuteMatrix();
     void findPositions();
-    std::vector<std::pair<int, int>> makeBigrams(const std::vector<int>& codes);
+    vector<pair<int, int>> makeBigrams(const vector<int>& codes);
     
-    std::pair<int, int> encryptBigram(int a, int b);
-    std::pair<int, int> decryptBigram(int a, int b);
+    pair<int, int> encryptBigram(int a, int b);
+    pair<int, int> decryptBigram(int a, int b);
     
 public:
-    BigramCipher(const std::string& key);
+    BigramCipher(const string& key);
     
-    std::vector<int> encrypt(const std::vector<int>& codes);
-    std::vector<int> decrypt(const std::vector<int>& codes);
+    vector<int> encrypt(const vector<int>& codes);
+    vector<int> decrypt(const vector<int>& codes);
     
-    std::vector<uint8_t> encryptBytes(const std::vector<uint8_t>& data);
-    std::vector<uint8_t> decryptBytes(const std::vector<uint8_t>& data);
+    vector<uint8_t> encryptBytes(const vector<uint8_t>& data);
+    vector<uint8_t> decryptBytes(const vector<uint8_t>& data);
     
-    std::string encryptText(const std::string& text);
-    std::string decryptText(const std::string& text);
+    string encryptText(const string& text);
+    string decryptText(const string& text);
     
-    static std::vector<uint8_t> processBytes(const std::vector<uint8_t>& data, const std::string& key, bool encrypt);
-    static std::string processText(const std::string& text, const std::string& key, bool encrypt);
+    static vector<uint8_t> processBytes(const vector<uint8_t>& data, const string& key, bool encrypt);
+    static string processText(const string& text, const string& key, bool encrypt);
 };
 
 #endif
