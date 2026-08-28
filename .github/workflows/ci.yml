@@ -1,0 +1,79 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+      - name: Install dependencies
+        run: cd server && npm ci
+      - name: Run ESLint
+        run: cd server && npx eslint src/ --ext .js --max-warnings=0
+
+  test:
+    runs-on: ubuntu-latest
+    needs: lint
+
+    services:
+      postgres:
+        image: postgres:15-alpine
+        env:
+          POSTGRES_DB: fire_safety_laba4
+          POSTGRES_USER: admin
+          POSTGRES_PASSWORD: secret123
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+
+      - name: Install dependencies
+        run: cd server && npm ci
+
+      - name: Install PostgreSQL client
+        run: sudo apt-get update && sudo apt-get install -y postgresql-client
+
+      - name: Run migrations (init)
+        run: psql -h localhost -U admin -d fire_safety_laba4 -f server/migrations/init.sql
+        env:
+          PGPASSWORD: secret123
+
+      - name: Run migrations (002)
+        run: psql -h localhost -U admin -d fire_safety_laba4 -f server/migrations/002-align-existing-schema.sql
+        env:
+          PGPASSWORD: secret123
+
+      - name: Run migrations (003)
+        run: psql -h localhost -U admin -d fire_safety_laba4 -f server/migrations/003_create_sensors_and_audit.sql
+        env:
+          PGPASSWORD: secret123
+
+      - name: Run migrations (004)
+        run: psql -h localhost -U admin -d fire_safety_laba4 -f server/migrations/004_create_login_attempts.sql
+        env:
+          PGPASSWORD: secret123
+
+      - name: Run tests
+        run: cd server && npm test
+        env:
+          DATABASE_URL: postgresql://admin:secret123@localhost:5432/fire_safety_laba4
+          JWT_SECRET: test_jwt_secret
+          REFRESH_SECRET: test_refresh_secret
+          NODE_ENV: test

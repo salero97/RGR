@@ -1,0 +1,13 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "firesafety",
+      "Group": "Servers",
+      "Host": "db",
+      "Port": 5432,
+      "MaintenanceDB": "fire_safety_laba4",
+      "Username": "admin",
+      "SSLMode": "prefer"
+    }
+  }
+}
