@@ -1,7 +1,8 @@
 import React, { useEffect, useState, useCallback } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useAuth } from '../context/AuthContext';
 import { useToast } from '../context/ToastContext';
-import { getSensors, createSensor, updateSensor, deleteSensor } from '../api/sensorsApi';
+import { getSensors, createSensor, updateSensor, deleteSensor, simulateSensor } from '../api/sensorsApi';
 import { getBuildings } from '../api/buildingsApi';
 import useInfiniteScroll from '../hooks/useInfiniteScroll';
 
@@ -47,11 +48,13 @@ export default function SensorsPage() {
   const [showModal, setShowModal] = useState(false);
   const [editing, setEditing] = useState(null);
   const [formError, setFormError] = useState('');
-  const [form, setForm] = useState({ building_id: '', type: TYPE_OPTIONS[0], location: '', status: 'active' });
+  const [form, setForm] = useState({ building_id: '', type: TYPE_OPTIONS[0], location: '', floor: '', status: 'active' });
 
   const { user } = useAuth();
   const showToast = useToast();
+  const navigate = useNavigate();
   const canManage = user?.role === 'admin';
+  const canSimulate = ['admin', 'dispatcher'].includes(user?.role);
 
   useEffect(() => {
     getBuildings()
@@ -82,14 +85,20 @@ export default function SensorsPage() {
 
   function openCreate() {
     setEditing(null);
-    setForm({ building_id: buildings[0]?.id || '', type: TYPE_OPTIONS[0], location: '', status: 'active' });
+    setForm({ building_id: buildings[0]?.id || '', type: TYPE_OPTIONS[0], location: '', floor: '', status: 'active' });
     setFormError('');
     setShowModal(true);
   }
 
   function openEdit(sensor) {
     setEditing(sensor);
-    setForm({ building_id: sensor.building_id, type: sensor.type, location: sensor.location || '', status: sensor.status });
+    setForm({
+      building_id: sensor.building_id,
+      type: sensor.type,
+      location: sensor.location || '',
+      floor: sensor.floor ?? '',
+      status: sensor.status
+    });
     setFormError('');
     setShowModal(true);
   }
@@ -119,17 +128,26 @@ export default function SensorsPage() {
       setFormError('Укажите тип датчика');
       return;
     }
+    if (form.floor && !Number.isInteger(Number(form.floor)) || (form.floor && Number(form.floor) < 1)) {
+      setFormError('Этаж должен быть положительным целым числом');
+      return;
+    }
 
     try {
       if (editing) {
-        await updateSensor(editing.id, { type: form.type, location: form.location, status: form.status });
+        await updateSensor(editing.id, {
+          type: form.type,
+          location: form.location,
+          status: form.status,
+          floor: form.floor || null
+        });
         showToast('Датчик обновлён', 'success');
       } else {
         await createSensor(form);
         showToast('Датчик добавлен', 'success');
       }
       setShowModal(false);
-      reload(); // <-- Обновляем список
+      reload();
     } catch (err) {
       handleApiError(err, 'Ошибка сохранения датчика');
     }
@@ -140,7 +158,7 @@ export default function SensorsPage() {
     try {
       await deleteSensor(id);
       showToast('Датчик удалён', 'success');
-      reload(); // <-- Обновляем список
+      reload();
     } catch (err) {
       const status = err.response?.status;
       const message = err.response?.data?.message;
@@ -151,6 +169,20 @@ export default function SensorsPage() {
       }
 
       showToast(message || 'Ошибка удаления датчика');
+    }
+  }
+
+  async function handleSimulate(id) {
+    if (!window.confirm('Создать инцидент по срабатыванию датчика?')) return;
+    try {
+      const incident = await simulateSensor(id);
+      showToast(`Инцидент #${incident.id} создан по симуляции датчика`, 'success');
+      reload();
+      // можно перейти на страницу инцидента
+      // navigate(`/incidents/${incident.id}`);
+    } catch (err) {
+      const message = err.response?.data?.message || 'Ошибка симуляции датчика';
+      showToast(message, 'error');
     }
   }
 
@@ -189,9 +221,11 @@ export default function SensorsPage() {
               <th style={s.th}>ID</th>
               <th style={s.th}>Здание</th>
               <th style={s.th}>Тип</th>
+              <th style={s.th}>Этаж</th>
               <th style={s.th}>Расположение</th>
               <th style={s.th}>Статус</th>
               {canManage && <th style={s.th}></th>}
+              {canSimulate && <th style={s.th}></th>}
             </tr>
           </thead>
           <tbody>
@@ -200,6 +234,7 @@ export default function SensorsPage() {
                 <td style={s.td}>{sensor.id}</td>
                 <td style={s.td}>{buildingName(sensor.building_id)}</td>
                 <td style={s.td}>{sensor.type}</td>
+                <td style={s.td}>{sensor.floor ?? '—'}</td>
                 <td style={s.td}>{sensor.location || '—'}</td>
                 <td style={s.td}>{statusLabel(sensor.status)}</td>
                 {canManage && (
@@ -215,6 +250,16 @@ export default function SensorsPage() {
                       onClick={() => handleDelete(sensor.id)}
                     >
                       Удалить
+                    </button>
+                  </td>
+                )}
+                {canSimulate && (
+                  <td style={s.td}>
+                    <button
+                      style={{ ...s.actionBtn, background: '#d4edda', color: '#155724' }}
+                      onClick={() => handleSimulate(sensor.id)}
+                    >
+                      Симуляция
                     </button>
                   </td>
                 )}
@@ -262,12 +307,22 @@ export default function SensorsPage() {
                 ))}
               </select>
 
+              <label style={s.label}>Этаж <span style={{ color: '#888' }}>(необязательно)</span></label>
+              <input
+                style={s.input}
+                type="number"
+                min="1"
+                value={form.floor}
+                onChange={e => setForm(prev => ({ ...prev, floor: e.target.value }))}
+                placeholder="Например: 3"
+              />
+
               <label style={s.label}>Расположение <span style={{ color: '#888' }}>(необязательно)</span></label>
               <input
                 style={s.input}
                 value={form.location}
                 onChange={e => setForm(prev => ({ ...prev, location: e.target.value }))}
-                placeholder="Например: 2 этаж, коридор"
+                placeholder="Например: коридор, комната 205"
               />
 
               <label style={s.label}>Статус</label>

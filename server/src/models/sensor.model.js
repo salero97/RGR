@@ -1,6 +1,6 @@
 const pool = require('../config/db');
 
-const ALLOWED_UPDATE_FIELDS = ['type', 'location', 'status'];
+const ALLOWED_UPDATE_FIELDS = ['type', 'location', 'status', 'floor'];
 
 async function findAll({ building_id, status, search, page, limit } = {}) {
     const conditions = [];
@@ -50,10 +50,10 @@ async function findById(id) {
     return result.rows[0];
 }
 
-async function create({ building_id, type, location, status }) {
+async function create({ building_id, type, location, status, floor }) {
     const result = await pool.query(
-        'INSERT INTO sensors (building_id, type, location, status) VALUES ($1, $2, $3, $4) RETURNING *',
-        [building_id, type, location, status || 'active']
+        'INSERT INTO sensors (building_id, type, location, status, floor) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+        [building_id, type, location, status || 'active', floor || null]
     );
     return result.rows[0];
 }

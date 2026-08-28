@@ -48,6 +48,7 @@ export default function Layout() {
                     <NavLink to="/buildings" style={linkStyle}>Объекты</NavLink>
                     <NavLink to="/sensors" style={linkStyle}>Датчики</NavLink>
                     {user?.role === 'admin' && <NavLink to="/users" style={linkStyle}>Пользователи</NavLink>}
+                    {user?.role === 'admin' && <NavLink to="/audit" style={linkStyle}>Аудит</NavLink>}
                     <NavLink to="/profile" style={linkStyle}>Профиль</NavLink>
                 </nav>
                 <div style={s.footer}>

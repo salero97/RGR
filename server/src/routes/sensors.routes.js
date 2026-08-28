@@ -15,5 +15,6 @@ router.get('/:id', ctrl.getOne);
 router.post('/', authorizeRole('admin'), validateBody(sensorCreateSchema), ctrl.create);
 router.put('/:id', authorizeRole('admin'), validateBody(sensorUpdateSchema), ctrl.update);
 router.delete('/:id', authorizeRole('admin'), ctrl.remove);
+router.post('/:id/simulate', authorizeRole('admin', 'dispatcher'), ctrl.simulate);
 
 module.exports = router;

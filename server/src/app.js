@@ -12,6 +12,7 @@ const incidentRoutes = require('./routes/incidents.routes');
 const buildingRoutes = require('./routes/buildings.routes');
 const sensorRoutes = require('./routes/sensors.routes');
 const userRoutes = require('./routes/users.routes');
+const auditRoutes = require('./routes/audit.routes');
 const errorHandler = require('./middleware/errorHandler');
 const logger = require('./config/logger');
 
@@ -22,7 +23,9 @@ const allowedOrigins = [
   'http://localhost',
   'http://localhost:80',
   'http://localhost:5173',
-  'http://localhost:3000'
+  'http://localhost:3000',
+  'http://217.71.129.139:4735',
+  'https://217.71.129.139:4768'
 ];
 
 app.use(
@@ -63,10 +66,10 @@ app.use('/api/v1/incidents', incidentRoutes);
 app.use('/api/v1/buildings', buildingRoutes);
 app.use('/api/v1/sensors', sensorRoutes);
 app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/audit', auditRoutes);
 
 app.use(errorHandler);
 
-// Запуск сервера только при прямом запуске этого файла, а не при импорте (например, в тестах)
 if (require.main === module) {
   app.listen(PORT, () => {
     logger.info('Server is listening on port ' + PORT);

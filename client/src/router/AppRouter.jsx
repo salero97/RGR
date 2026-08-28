@@ -13,6 +13,7 @@ import Layout from '../pages/Layout';
 import MapPage from '../pages/MapPage';
 import UsersPage from '../pages/UsersPage';
 import SensorsPage from '../pages/SensorsPage';
+import AuditPage from '../pages/AuditPage';
 
 function PrivateRoute({ children }) {
   const { token, isLoading } = useAuth();
@@ -43,6 +44,7 @@ export default function AppRouter() {
         <Route path="map" element={<MapPage />} />
         <Route path="profile" element={<Profile />} />
         <Route path="users" element={<AdminRoute><UsersPage /></AdminRoute>} />
+        <Route path="audit" element={<AdminRoute><AuditPage /></AdminRoute>} />
       </Route>
       <Route path="*" element={<Navigate to="/" replace />} />
     </Routes>

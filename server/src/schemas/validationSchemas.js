@@ -72,13 +72,15 @@ const sensorCreateSchema = Joi.object({
   building_id: Joi.number().integer().required(),
   type: Joi.string().trim().min(1).required(),
   location: Joi.string().trim().allow('', null),
-  status: Joi.string().valid(...ALLOWED_SENSOR_STATUSES).optional()
+  status: Joi.string().valid(...ALLOWED_SENSOR_STATUSES).optional(),
+  floor: Joi.number().integer().min(1).allow(null).optional()
 });
 
 const sensorUpdateSchema = Joi.object({
   type: Joi.string().trim().min(1),
   location: Joi.string().trim().allow('', null),
-  status: Joi.string().valid(...ALLOWED_SENSOR_STATUSES)
+  status: Joi.string().valid(...ALLOWED_SENSOR_STATUSES),
+  floor: Joi.number().integer().min(1).allow(null)
 }).min(1);
 
 const userRoleUpdateSchema = Joi.object({

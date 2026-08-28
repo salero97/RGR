@@ -7,3 +7,5 @@ CREATE TABLE IF NOT EXISTS login_attempts (
 );
 
 CREATE INDEX IF NOT EXISTS idx_login_attempts_ip ON login_attempts(ip);
+
+ALTER TABLE sensors ADD COLUMN IF NOT EXISTS floor INTEGER;
