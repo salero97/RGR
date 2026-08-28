@@ -2,7 +2,7 @@ const request = require('supertest');
 const app = require('../app');
 const pool = require('../config/db');
 
-beforeAll(async () => {
+beforeEach(async () => {
     await pool.query('DELETE FROM login_attempts');
 });
 
@@ -12,19 +12,30 @@ afterAll(async () => {
 
 describe('Защита от брутфорса', () => {
     const email = `bruteforce_${Date.now()}@test.com`;
+    const testIp = '127.0.0.1';
 
     beforeAll(async () => {
-        await pool.query('DELETE FROM login_attempts');
+        await request(app)
+            .post('/api/v1/auth/register')
+            .set('X-Forwarded-For', testIp)
+            .send({ email, password: 'password123', fullname: 'Brute Force User' });
     });
 
     it('блокирует IP после 3 неудачных попыток входа', async () => {
         for (let i = 0; i < 3; i++) {
-            await request(app).post('/api/v1/auth/login').send({ email, password: 'wrongpass' });
+            const res = await request(app)
+                .post('/api/v1/auth/login')
+                .set('X-Forwarded-For', testIp)
+                .send({ email, password: 'wrongpass' });
+            expect(res.status).toBe(401);
         }
 
-        const res = await request(app).post('/api/v1/auth/login').send({ email, password: 'wrongpass' });
+        const res = await request(app)
+            .post('/api/v1/auth/login')
+            .set('X-Forwarded-For', testIp)
+            .send({ email, password: 'wrongpass' });
         expect(res.status).toBe(429);
-        expect(res.body.message).toBeDefined();
+        expect(res.body.message).toBe('Слишком много неудачных попыток входа. Попробуйте позже.');
     });
 
     afterAll(async () => {
@@ -37,17 +48,14 @@ describe('Хранение паролей', () => {
         const email = `hashcheck_${Date.now()}@test.com`;
         const password = 'plainpassword123';
 
-        // Регистрируем пользователя и проверяем успешность
         const regRes = await request(app)
             .post('/api/v1/auth/register')
             .send({ email, password, fullname: 'Hash Check User' });
         expect(regRes.status).toBe(201);
 
-        // Запрашиваем хеш из БД
         const result = await pool.query('SELECT password_hash FROM users WHERE email = $1', [email]);
         const hash = result.rows[0]?.password_hash;
 
-        // Проверяем, что хеш существует, не равен паролю и начинается с '$2' (bcrypt)
         expect(hash).toBeDefined();
         expect(hash).not.toBe(password);
         expect(hash.startsWith('$2')).toBe(true);

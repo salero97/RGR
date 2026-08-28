@@ -2,7 +2,7 @@ const request = require('supertest');
 const app = require('../app');
 const pool = require('../config/db');
 
-beforeAll(async () => {
+beforeEach(async () => {
     await pool.query('DELETE FROM login_attempts');
 });
 

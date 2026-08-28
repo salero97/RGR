@@ -45,7 +45,7 @@ async function register(req, res, next) {
       objectType: 'user',
       objectId: user.id,
       details: { email: user.email, role: user.role },
-      ipAddress: req.ip,
+      ipAddress: req.clientIp || req.ip,
       userAgent: req.headers['user-agent']
     });
 
@@ -67,7 +67,7 @@ async function login(req, res, next) {
     }
 
     const { email, password } = value;
-    const ip = req.ip;
+    const ip = req.clientIp || req.ip;
 
     const user = await userModel.findByEmail(email);
 
@@ -222,7 +222,7 @@ async function logout(req, res, next) {
         objectType: 'user',
         objectId: record ? record.userId : null,
         details: {},
-        ipAddress: req.ip,
+        ipAddress: req.clientIp || req.ip,
         userAgent: req.headers['user-agent']
       });
     }

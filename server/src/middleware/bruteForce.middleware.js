@@ -3,7 +3,9 @@ const auditModel = require('../models/auditLog.model');
 
 async function checkLoginBruteForce(req, res, next) {
   try {
-    const ip = req.ip;
+    const ip = (req.headers['x-forwarded-for'] || req.ip || '').split(',')[0].trim() || '0.0.0.0';
+    req.clientIp = ip;
+
     await loginAttemptModel.cleanupOld();
 
     const status = await loginAttemptModel.isBlocked(ip);
