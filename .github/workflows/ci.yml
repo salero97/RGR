@@ -57,11 +57,17 @@ jobs:
         run: psql -h localhost -U admin -d fire_safety_laba4 -f server/migrations/003_create_sensors_and_audit.sql
         env:
           PGPASSWORD: secret123
+      - name: Run migrations (004)
+        run: psql -h localhost -U admin -d fire_safety_laba4 -f server/migrations/004_create_login_attempts.sql
+        env:
+          PGPASSWORD: secret123
       - name: Run tests
         run: cd server && npm test
         env:
           DATABASE_URL: postgresql://admin:secret123@localhost:5432/fire_safety_laba4
           JWT_SECRET: test_jwt_secret
+          REFRESH_SECRET: test_refresh_secret
+          NODE_ENV: test
 
   deploy:
     runs-on: ubuntu-latest
