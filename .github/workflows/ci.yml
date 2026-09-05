@@ -85,7 +85,7 @@ jobs:
           port: ${{ secrets.SERVER_PORT }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /opt/fire-safety
+            cd /opt/RGR_new
             git pull origin main
             docker compose down
             docker compose up -d --build
