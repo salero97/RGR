@@ -1,5 +1,5 @@
 name: CI/CD
-
+# Хочется помолится чтобы ты работал
 on:
   push:
     branches: [main]
